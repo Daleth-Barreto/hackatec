@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulación de Crisis</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      background-color: white;
+      transition: background-color 1s;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .message {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #f0f0f0;
+      border-radius: 12px;
+      max-width: 400px;
+    }
+
+    .routine {
+      margin-top: 0.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Monitor de Crisis</h1>
+    <div id="status" class="message">
+      Esperando señal del servidor...
+    </div>
+    <div id="routine" class="routine"></div>
+  </div>
+
+  <script>
+    const statusDiv = document.getElementById("status");
+    const routineDiv = document.getElementById("routine");
+
+    const ws = new WebSocket("ws://localhost:8000/ws");
+
+    ws.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+
+      // Cambia el fondo
+      document.body.style.backgroundColor = data.background || "white";
+
+      // Actualiza el mensaje
+      statusDiv.textContent = data.message || "Señal recibida.";
+
+      // Muestra rutina
+      routineDiv.textContent = data.routine ? `Rutina: ${data.routine}` : "";
+    };
+
+    ws.onopen = () => {
+      console.log("Conectado al WebSocket.");
+    };
+
+    ws.onerror = (err) => {
+      console.error("WebSocket error", err);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket cerrado.");
+      statusDiv.textContent = "Desconectado del servidor.";
+    };
+  </script>
+</body>
+</html>
